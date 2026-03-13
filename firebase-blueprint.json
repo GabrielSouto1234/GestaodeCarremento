@@ -1,0 +1,75 @@
+{
+  "entities": {
+    "Report": {
+      "title": "Inspection Report",
+      "description": "A truck inspection report with checklist and photos.",
+      "type": "object",
+      "properties": {
+        "protocol": { "type": "string", "description": "Sequential protocol number (e.g., 00001 - Client Name)" },
+        "clientName": { "type": "string" },
+        "driverName": { "type": "string" },
+        "truckPlate": { "type": "string" },
+        "driverPlate": { "type": "string" },
+        "invoiceNumbers": { "type": "string" },
+        "truckType": { "type": "string" },
+        "observations": { "type": "string" },
+        "checklist": {
+          "type": "object",
+          "properties": {
+            "painting": { "type": "boolean" },
+            "externalStructure": { "type": "boolean" },
+            "floor": { "type": "boolean" },
+            "internalSides": { "type": "boolean" },
+            "seal": { "type": "boolean" },
+            "roof": { "type": "boolean" }
+          }
+        },
+        "photos": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "URLs of the 9 mandatory photos"
+        },
+        "status": { "type": "string", "enum": ["ENVIADO"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string", "description": "User UID" }
+      },
+      "required": ["protocol", "clientName", "driverName", "truckPlate", "driverPlate", "invoiceNumbers", "truckType", "checklist", "photos", "status", "createdAt", "createdBy"]
+    },
+    "Counter": {
+      "title": "Protocol Counter",
+      "description": "Maintains the sequential number for protocols.",
+      "type": "object",
+      "properties": {
+        "current": { "type": "integer", "description": "The last used sequence number" }
+      },
+      "required": ["current"]
+    },
+    "AuthorizedIP": {
+      "title": "Authorized IP",
+      "description": "A public IP address authorized to use the app.",
+      "type": "object",
+      "properties": {
+        "ip": { "type": "string" },
+        "phoneNumber": { "type": "string", "description": "Phone number associated with the device" },
+        "registeredAt": { "type": "string", "format": "date-time" },
+        "registeredBy": { "type": "string" },
+        "lastUsed": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ip", "registeredAt", "registeredBy"]
+    }
+  },
+  "firestore": {
+    "/reports/{reportId}": {
+      "schema": "Report",
+      "description": "Collection of inspection reports"
+    },
+    "/counters/{counterId}": {
+      "schema": "Counter",
+      "description": "Collection for sequence counters"
+    },
+    "/authorizedIPs/{ipId}": {
+      "schema": "AuthorizedIP",
+      "description": "List of authorized network IPs"
+    }
+  }
+}

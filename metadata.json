@@ -1,0 +1,7 @@
+{
+  "name": "CheckTruck - Inspeção de Caminhões",
+  "description": "Aplicativo para checklist e inspeção de caminhões com registro de fotos e geração de protocolos.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

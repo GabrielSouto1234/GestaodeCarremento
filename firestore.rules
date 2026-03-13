@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: reports
+    // Fields:
+    //   - protocol: string (required)
+    //   - clientName: string (required)
+    //   - driverName: string (required)
+    //   - truckPlate: string (required)
+    //   - driverPlate: string (required)
+    //   - invoiceNumbers: string (required)
+    //   - truckType: string (required)
+    //   - checklist: map (required)
+    //   - photos: list (required, size 9)
+    //   - status: string (required, 'ENVIADO')
+    //   - createdAt: timestamp (required)
+    //   - createdBy: string (required, matches auth.uid)
+    //
+    // Collection: counters
+    // Fields:
+    //   - current: int (required)
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidReport(data) {
+      return data.protocol is string && data.protocol.size() > 0 && data.protocol.size() < 100 &&
+             data.clientName is string && data.clientName.size() > 0 && data.clientName.size() < 100 &&
+             data.driverName is string && data.driverName.size() > 0 && data.driverName.size() < 100 &&
+             data.truckPlate is string && data.truckPlate.size() > 0 && data.truckPlate.size() < 20 &&
+             data.driverPlate is string && data.driverPlate.size() > 0 && data.driverPlate.size() < 20 &&
+             data.invoiceNumbers is string && data.invoiceNumbers.size() > 0 && data.invoiceNumbers.size() < 500 &&
+             data.truckType is string &&
+             data.checklist is map &&
+             data.photos is list && data.photos.size() == 9 &&
+             data.status == 'ENVIADO' &&
+             data.createdAt is timestamp &&
+             data.createdBy == request.auth.uid;
+    }
+
+    match /reports/{reportId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidReport(request.resource.data);
+      allow update, delete: if false; // Reports are immutable once sent
+    }
+
+    match /counters/{counterId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Simplified for sequence management
+    }
+
+    match /authorizedIPs/{ipId} {
+      allow read: if isAuthenticated(); // Admin can list, users can check
+      allow create: if true; // Protected by app logic
+      allow update: if true; // To update lastUsed
+      allow delete: if isAuthenticated(); // Admin can remove
+    }
+  }
+}
